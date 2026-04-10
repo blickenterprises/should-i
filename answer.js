@@ -84,8 +84,16 @@ ${question}
       });
     }
 
-    let answer = String(parsed.answer || "").trim();
-    answer = answer.replace(/^(yes|no|maybe)[\.\s\-:]+/i, "");
+    let answer = "";
+
+if (parsed && typeof parsed.answer === "string") {
+  answer = parsed.answer.trim();
+}
+
+// 🔥 only run replace if answer exists
+if (answer) {
+  answer = answer.replace(/^(yes|no|maybe)[\.\s\-:]+/i, "");
+}
 
     const cleaned = {
       verdict: ["yes", "no", "maybe"].includes(parsed.verdict) ? parsed.verdict : "maybe",
