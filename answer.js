@@ -98,6 +98,10 @@ ${question}
     else if (lower.startsWith("maybe. ")) answer = answer.slice(7);
     else if (lower.startsWith("maybe ")) answer = answer.slice(6);
 
+    console.log("QUESTION:", question);
+    console.log("VERDICT:", verdict);
+    console.log("ANSWER:", answer);
+
     return res.status(200).json({
       verdict,
       answer
