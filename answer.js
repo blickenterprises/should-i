@@ -8,7 +8,7 @@ module.exports = async (req, res) => {
       return res.status(405).json({ error: "Method not allowed." });
     }
 
-    const question = (req.body && req.body.question ? req.body.question : "").trim();
+    const question = (req.body && req.body.question ? String(req.body.question) : "").trim();
 
     if (!question) {
       return res.status(400).json({ error: "Question is required." });
@@ -45,14 +45,6 @@ CRITICAL RULES:
 - No long paragraphs
 - No rambling
 - No disclaimers
-
-Tone guidance:
-- Say the obvious thing
-- Call out weak reasoning
-- Light humor is good
-- Make it feel like something worth screenshotting
-
-IMPORTANT:
 - Do NOT include the words "yes", "no", or "maybe" inside the answer text
 - The verdict is handled separately
 
@@ -84,28 +76,30 @@ ${question}
       });
     }
 
-    let answer = "";
+    const verdict =
+      parsed && ["yes", "no", "maybe"].includes(parsed.verdict)
+        ? parsed.verdict
+        : "maybe";
 
-if (parsed && typeof parsed.answer === "string") {
-  answer = parsed.answer.trim();
-}
+    let answer =
+      parsed && typeof parsed.answer === "string"
+        ? parsed.answer.trim()
+        : "";
 
-// 🔥 only run replace if answer exists
-if (answer) {
-  answer = answer.replace(/^(yes|no|maybe)[\.\s\-:]+/i, "");
-}
+    if (!answer) {
+      answer = "That answer came back weird. Ask it again.";
+    }
 
-    const cleaned = {
-      verdict: ["yes", "no", "maybe"].includes(parsed.verdict) ? parsed.verdict : "maybe",
+    answer = answer.replace(/^(yes|no|maybe)[\.\s\-:]+/i, "");
+
+    return res.status(200).json({
+      verdict,
       answer
-    };
-
-    return res.status(200).json(cleaned);
+    });
   } catch (error) {
     console.error("API ERROR:", error);
-
     return res.status(500).json({
-      error: error?.message || "Something went wrong in /api/answer."
+      error: error && error.message ? error.message : "Something went wrong in /api/answer."
     });
   }
 };
