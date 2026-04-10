@@ -8,20 +8,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 
   <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PS7HTM6WYS"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-PS7HTM6WYS');
   </script>
-
-  <!-- AdSense: uncomment AFTER approval and replace ca-pub ID -->
-  <!--
-  <script async
-    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
-    crossorigin="anonymous"></script>
-  -->
 
   <style>
     body {
@@ -34,7 +27,7 @@
     .page {
       max-width: 900px;
       margin: auto;
-      padding: 40px 20px;
+      padding: 40px 20px 60px;
       text-align: center;
     }
 
@@ -68,6 +61,10 @@
       cursor: pointer;
     }
 
+    button:hover {
+      background: #3a9a8a;
+    }
+
     .answer {
       margin-top: 30px;
       background: #273238;
@@ -80,43 +77,70 @@
     .verdict {
       font-weight: bold;
       margin-bottom: 10px;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
+      letter-spacing: 0.03em;
     }
 
-    .share-btn {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: #4db6ac;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      cursor: pointer;
+    .action-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .mini-btn {
       margin-top: 0;
-    }
-
-    .share-btn:hover {
-      background: #3a9a8a;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.86rem;
     }
 
     .share-status {
       margin-top: 12px;
       color: #b7c4c4;
       font-size: 0.9rem;
+      line-height: 1.5;
     }
 
-    .ad-slot {
-      margin: 26px auto 0;
-      padding: 14px;
-      max-width: 760px;
-      min-height: 90px;
-      border: 1px dashed rgba(255,255,255,0.12);
-      border-radius: 10px;
-      color: #8fa0a0;
-      text-align: center;
+    .viral-line {
+      margin-top: 16px;
+      color: #9ecfc9;
       font-size: 0.92rem;
       line-height: 1.5;
+    }
+
+    .examples {
+      margin-top: 26px;
+      text-align: left;
+      max-width: 650px;
+      margin-left: auto;
+      margin-right: auto;
+      background: #273238;
+      padding: 18px;
+      border-radius: 12px;
+    }
+
+    .examples h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 1rem;
+    }
+
+    .example-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .example-btn {
+      background: #314148;
+      color: #e6ecec;
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-top: 0;
+    }
+
+    .example-btn:hover {
+      background: #3a4a52;
     }
 
     .footer {
@@ -153,11 +177,16 @@
 
     <div id="answer" class="answer" style="display:none;"></div>
 
-    <!-- Placeholder so the page already has a sensible ad location.
-         After AdSense approval, replace this whole block with your ad unit
-         or just rely on Auto ads. -->
-    <div class="ad-slot" id="adSlot">
-      Ad space reserved for future monetization.
+    <div class="examples">
+      <h3>Try one:</h3>
+      <div class="example-buttons">
+        <button class="example-btn" onclick="useExample('Should I text my ex?')">Should I text my ex?</button>
+        <button class="example-btn" onclick="useExample('Should I skip my workout?')">Should I skip my workout?</button>
+        <button class="example-btn" onclick="useExample('Should I buy this?')">Should I buy this?</button>
+        <button class="example-btn" onclick="useExample('Should I quit my job?')">Should I quit my job?</button>
+        <button class="example-btn" onclick="useExample('Should I send this angry text?')">Should I send this angry text?</button>
+        <button class="example-btn" onclick="useExample('Should I drink tonight?')">Should I drink tonight?</button>
+      </div>
     </div>
 
     <div class="footer">
@@ -184,6 +213,33 @@
       }
     });
 
+    function trackEvent(name, params = {}) {
+      if (typeof gtag === "function") {
+        gtag("event", name, params);
+      }
+    }
+
+    function categorizeQuestion(question) {
+      const q = question.toLowerCase();
+
+      if (q.includes("ex") || q.includes("text") || q.includes("relationship") || q.includes("date")) return "relationships";
+      if (q.includes("drink") || q.includes("high") || q.includes("relapse")) return "substances";
+      if (q.includes("buy") || q.includes("money") || q.includes("spend")) return "money";
+      if (q.includes("job") || q.includes("quit") || q.includes("career")) return "work";
+      if (q.includes("workout") || q.includes("gym") || q.includes("run")) return "health";
+      if (q.includes("angry") || q.includes("text") || q.includes("email")) return "conflict";
+
+      return "other";
+    }
+
+    function useExample(text) {
+      input.value = text;
+      input.focus();
+      trackEvent("example_clicked", {
+        example_text: text
+      });
+    }
+
     async function shareAnswer() {
       const shareUrl = window.location.href;
       const shareText = `should i?\n\n${lastQuestion}\n\n${lastVerdict}\n${lastAnswer}\n\n${shareUrl}`;
@@ -200,9 +256,28 @@
           await navigator.clipboard.writeText(shareText);
           setShareStatus("Share text copied. Paste it anywhere.");
         }
+
+        trackEvent("answer_shared", {
+          verdict: lastVerdict,
+          category: categorizeQuestion(lastQuestion)
+        });
       } catch (err) {
         if (err && err.name === "AbortError") return;
         setShareStatus("Could not share. Try again.");
+      }
+    }
+
+    async function copyAnswer() {
+      const text = `${lastQuestion}\n\n${lastVerdict}\n${lastAnswer}\n\n${window.location.href}`;
+      try {
+        await navigator.clipboard.writeText(text);
+        setShareStatus("Copied.");
+        trackEvent("answer_copied", {
+          verdict: lastVerdict,
+          category: categorizeQuestion(lastQuestion)
+        });
+      } catch (err) {
+        setShareStatus("Could not copy.");
       }
     }
 
@@ -218,6 +293,11 @@
       const answerBox = document.getElementById("answer");
       answerBox.style.display = "block";
       answerBox.innerHTML = "Thinking...";
+
+      trackEvent("question_asked", {
+        question_category: categorizeQuestion(q),
+        question_length: q.length
+      });
 
       try {
         const res = await fetch("/api/answer", {
@@ -243,17 +323,31 @@
         lastVerdict = data.verdict.toUpperCase();
         lastAnswer = data.answer;
 
+        trackEvent("answer_returned", {
+          verdict: data.verdict,
+          question_category: categorizeQuestion(q)
+        });
+
         answerBox.innerHTML = `
-          <button class="share-btn" onclick="shareAnswer()">Share</button>
           <div class="verdict">${lastVerdict}</div>
           <div id="shareText">
             <strong>${q}</strong><br><br>
             ${data.answer}
           </div>
+
+          <div class="action-row">
+            <button class="mini-btn" onclick="shareAnswer()">Share</button>
+            <button class="mini-btn" onclick="copyAnswer()">Copy Answer</button>
+          </div>
+
           <div id="shareStatus" class="share-status"></div>
+          <div class="viral-line">Send this to the friend who needs to hear it.</div>
         `;
       } catch (err) {
         answerBox.innerHTML = "Error: " + err.message;
+        trackEvent("answer_error", {
+          message: err.message
+        });
       }
     }
   </script>
