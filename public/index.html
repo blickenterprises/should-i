@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>should i?</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      background: #1f2529;
+      color: #e6ecec;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: auto;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .sub {
+      color: #b7c4c4;
+      margin-bottom: 30px;
+    }
+
+    input {
+      width: 100%;
+      max-width: 500px;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      font-size: 1rem;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: none;
+      background: #4db6ac;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .answer {
+      margin-top: 30px;
+      background: #273238;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: left;
+    }
+
+    .verdict {
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <h1>should i?</h1>
+    <div class="sub">Make better decisions, rationally and morally.</div>
+
+    <input id="question" placeholder="Should I text my ex?" />
+    <br>
+    <button onclick="ask()">Ask</button>
+
+    <div id="answer" class="answer" style="display:none;"></div>
+  </div>
+
+  <script>
+    const input = document.getElementById("question");
+
+    // 🔥 ENTER KEY SUPPORT
+    input.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        ask();
+      }
+    });
+
+    async function ask() {
+      const q = input.value.trim();
+      if (!q) return;
+
+      const answerBox = document.getElementById("answer");
+      answerBox.style.display = "block";
+      answerBox.innerHTML = "Thinking...";
+
+      try {
+        const res = await fetch("/api/answer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: q })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error);
+
+        answerBox.innerHTML = `
+          <div class="verdict">${data.verdict.toUpperCase()}</div>
+          <h2>${data.answer}</h2>
+        `;
+      } catch (err) {
+        answerBox.innerHTML = "Error: " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
