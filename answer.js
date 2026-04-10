@@ -90,7 +90,7 @@ ${question}
       answer = "That answer came back weird. Ask it again.";
     }
 
-    answer = answer.replace(/^(yes|no|maybe)[\.\s\-:]+/i, "");
+    answer = answer.replace(/^(yes|no|maybe)[.\s: -]+/i, "");
 
     return res.status(200).json({
       verdict,
