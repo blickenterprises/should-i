@@ -66,20 +66,27 @@
       font-size: 1.2rem;
     }
 
-    .copy-btn {
+    .share-btn {
       position: absolute;
       top: 15px;
       right: 15px;
       background: #4db6ac;
       border: none;
-      padding: 6px 10px;
+      padding: 8px 12px;
       border-radius: 6px;
       font-size: 0.8rem;
       cursor: pointer;
+      margin-top: 0;
     }
 
-    .copy-btn:hover {
+    .share-btn:hover {
       background: #3a9a8a;
+    }
+
+    .share-status {
+      margin-top: 12px;
+      color: #b7c4c4;
+      font-size: 0.9rem;
     }
   </style>
 </head>
@@ -98,6 +105,9 @@
 
   <script>
     const input = document.getElementById("question");
+    let lastQuestion = "";
+    let lastVerdict = "";
+    let lastAnswer = "";
 
     input.addEventListener("keypress", function(e) {
       if (e.key === "Enter") {
@@ -105,9 +115,35 @@
       }
     });
 
-    function copyAnswer() {
-      const text = document.getElementById("copyText").innerText;
-      navigator.clipboard.writeText(text);
+    async function shareAnswer() {
+      const shareUrl = window.location.href;
+      const shareText = `should i?\n\n${lastQuestion}\n\n${lastVerdict}\n${lastAnswer}\n\n${shareUrl}`;
+
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: "should i?",
+            text: `${lastQuestion}\n\n${lastVerdict}\n${lastAnswer}`,
+            url: shareUrl
+          });
+          setShareStatus("Shared.");
+        } else {
+          await navigator.clipboard.writeText(shareText);
+          setShareStatus("Share text copied. Paste it anywhere.");
+        }
+      } catch (err) {
+        if (err && err.name === "AbortError") {
+          return;
+        }
+        setShareStatus("Could not share. Try again.");
+      }
+    }
+
+    function setShareStatus(message) {
+      const statusEl = document.getElementById("shareStatus");
+      if (statusEl) {
+        statusEl.textContent = message;
+      }
     }
 
     async function ask() {
@@ -138,13 +174,18 @@
           throw new Error(data.error || "Something went wrong.");
         }
 
+        lastQuestion = q;
+        lastVerdict = data.verdict.toUpperCase();
+        lastAnswer = data.answer;
+
         answerBox.innerHTML = `
-          <button class="copy-btn" onclick="copyAnswer()">Copy</button>
-          <div class="verdict">${data.verdict.toUpperCase()}</div>
-          <div id="copyText">
+          <button class="share-btn" onclick="shareAnswer()">Share</button>
+          <div class="verdict">${lastVerdict}</div>
+          <div id="shareText">
             <strong>${q}</strong><br><br>
             ${data.answer}
           </div>
+          <div id="shareStatus" class="share-status"></div>
         `;
       } catch (err) {
         answerBox.innerHTML = "Error: " + err.message;
