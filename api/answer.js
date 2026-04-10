@@ -1,12 +1,14 @@
 const OpenAI = require("openai");
 
 module.exports = async (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ error: "Method not allowed." });
     }
 
-    const question = (req.body?.question || "").trim();
+    const question = (req.body && req.body.question ? String(req.body.question) : "").trim();
 
     if (!question) {
       return res.status(400).json({ error: "Question is required." });
@@ -43,14 +45,6 @@ CRITICAL RULES:
 - No long paragraphs
 - No rambling
 - No disclaimers
-
-Tone guidance:
-- Say the obvious thing
-- Call out weak reasoning
-- Light humor is good
-- Make it feel like something worth screenshotting
-
-IMPORTANT:
 - Do NOT include the words "yes", "no", or "maybe" inside the answer text
 - The verdict is handled separately
 
@@ -67,7 +61,7 @@ ${question}
 
     const response = await client.responses.create({
       model: "gpt-5.4-nano",
-      input: prompt,
+      input: prompt
     });
 
     const text = (response.output_text || "").trim();
@@ -82,19 +76,36 @@ ${question}
       });
     }
 
-    let answer = String(parsed.answer || "").trim();
-    answer = answer.replace(/^(yes|no|maybe)[\\.\\s\\-:]+/i, "");
+    const verdict =
+      parsed && ["yes", "no", "maybe"].includes(parsed.verdict)
+        ? parsed.verdict
+        : "maybe";
 
-    const cleaned = {
-      verdict: ["yes", "no", "maybe"].includes(parsed.verdict) ? parsed.verdict : "maybe",
+    let answer =
+      parsed && typeof parsed.answer === "string"
+        ? parsed.answer.trim()
+        : "";
+
+    if (!answer) {
+      answer = "That answer came back weird. Ask it again.";
+    }
+
+    const lower = answer.toLowerCase();
+    if (lower.startsWith("yes. ")) answer = answer.slice(5);
+    else if (lower.startsWith("yes ")) answer = answer.slice(4);
+    else if (lower.startsWith("no. ")) answer = answer.slice(4);
+    else if (lower.startsWith("no ")) answer = answer.slice(3);
+    else if (lower.startsWith("maybe. ")) answer = answer.slice(7);
+    else if (lower.startsWith("maybe ")) answer = answer.slice(6);
+
+    return res.status(200).json({
+      verdict,
       answer
-    };
-
-    return res.status(200).json(cleaned);
+    });
   } catch (error) {
-    console.error(error);
+    console.error("API ERROR:", error);
     return res.status(500).json({
-      error: error?.message || "Something went wrong."
+      error: error && error.message ? error.message : "Something went wrong in /api/answer."
     });
   }
 };
