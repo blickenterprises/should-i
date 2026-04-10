@@ -90,7 +90,13 @@ ${question}
       answer = "That answer came back weird. Ask it again.";
     }
 
-    answer = answer.replace(/^(yes|no|maybe)[.\s: -]+/i, "");
+    const lower = answer.toLowerCase();
+    if (lower.startsWith("yes. ")) answer = answer.slice(5);
+    else if (lower.startsWith("yes ")) answer = answer.slice(4);
+    else if (lower.startsWith("no. ")) answer = answer.slice(4);
+    else if (lower.startsWith("no ")) answer = answer.slice(3);
+    else if (lower.startsWith("maybe. ")) answer = answer.slice(7);
+    else if (lower.startsWith("maybe ")) answer = answer.slice(6);
 
     return res.status(200).json({
       verdict,
